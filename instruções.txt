@@ -1,0 +1,45 @@
+# Instruções para importação no Neo4j
+
+## Importação dos Dados
+
+1. Copie os arquivos CSV (produtos.csv, usuarios.csv, recomendacoes.csv, estoque.csv) para o diretório `import/` do Neo4j.
+
+2. Abra o Neo4j Desktop e inicie o banco de dados que você deseja usar.
+
+3. Abra o Neo4j Browser.
+
+4. Execute os seguintes comandos Cypher para importar os dados:
+
+### Produtos
+```cypher
+LOAD CSV WITH HEADERS FROM 'file:///produtos.csv' AS row
+CREATE (:Produto {
+    id: toInteger(row.id),
+    nome: row.nome,
+    preco: toFloat(row.preco)
+});
+
+
+LOAD CSV WITH HEADERS FROM 'file:///usuarios.csv' AS row
+CREATE (:Usuario {
+    id: toInteger(row.id),
+    nome: row.nome,
+    email: row.email
+});
+
+
+LOAD CSV WITH HEADERS FROM 'file:///recomendacoes.csv' AS row
+MATCH (u:Usuario {id: toInteger(row.usuario_id)})
+MATCH (p:Produto {id: toInteger(row.produto_id)})
+CREATE (u)-[:RECOMENDA {rank: toInteger(row.rank)}]->(p);
+
+
+LOAD CSV WITH HEADERS FROM 'file:///estoque.csv' AS row
+MATCH (p:Produto {id: toInteger(row.produto_id)})
+CREATE (:Estoque {
+    quantidade: toInteger(row.quantidade),
+    data_validade: date(row.data_validade)
+})-[:PERTENCE_A]->(p);
+
+
+
